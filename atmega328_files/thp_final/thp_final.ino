@@ -18,6 +18,10 @@ unsigned long newmillis = 0;
 unsigned long waitUntil = 0;
 unsigned long waitUntilTemp = 0;
 
+int fullBattery = 880;
+int emptyBattery = 300;
+int batteryPercent;
+
 int tempPin = 1;
 float tempRead;
 
@@ -104,7 +108,8 @@ void loop() {
  // -------------- Debound code button green end code -------------
 
   if (millis() >= waitUntilTemp) {
- 
+    
+    //lcd.clear();
     tempRead = analogRead(tempPin); // read analog pin to get temp
     tempRead = tempRead * 0.48828125; // converts f to c
     lcd.setCursor(0,1); // Set cursor to start of the second screen
@@ -113,6 +118,12 @@ void loop() {
     lcd.print(tempRead); // Prints to the LCD
     lcd.print(" "); // Prints to the LCD
     lcd.print((char)2); // Print custom temp_c sign to LCD
+
+    int sensorValue = analogRead(A2);
+    batteryPercent = map(sensorValue, emptyBattery, fullBattery,0 ,100);
+    lcd.setCursor(12,1);
+    lcd.print(batteryPercent);
+    lcd.print("%");
 
   waitUntilTemp =+ 100;
   }
