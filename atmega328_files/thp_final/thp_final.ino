@@ -41,6 +41,7 @@ Rtttl player;  // Song player
 uint8_t heart[8] = {0x0, 0xa, 0x1f, 0x1f, 0xe, 0x4, 0x0, 0x0}; // Custom char heart
 uint8_t temp[8] = {0x4, 0xa, 0xa, 0xa, 0x11, 0x1f, 0x1f, 0xe}; // Custom char temp 
 uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char degrees c
+uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
 
 int cnt = 0;
 int timings[16];
@@ -55,9 +56,10 @@ void setup() {
 
   lcd.init(); // Start up the lcd
   lcd.backlight(); // Turn on the lcd backlight
-  lcd.createChar(0, heart); // Custom Char degrees C
-  lcd.createChar(1, temp); // Custom Char degrees C
+  lcd.createChar(0, heart); // Custom Char heart
+  lcd.createChar(1, temp); // Custom Char temp
   lcd.createChar(2, temp_c); // Custom Char degrees C
+  lcd.createChar(3, battery); // Custom Char degrees C
   lcd.begin(16, 2); // Set up the lcd to have 16 char on 2 lines
 
   pinMode(led_beat, OUTPUT); 
@@ -121,8 +123,10 @@ void loop() {
 
     int sensorValue = analogRead(A2);
     batteryPercent = map(sensorValue, emptyBattery, fullBattery,0 ,100);
-    lcd.setCursor(12,1);
+    lcd.setCursor(11,1);
+    lcd.print((char)3);
     lcd.print(batteryPercent);
+    lcd.setCursor(16,1);
     lcd.print("%");
 
   waitUntilTemp =+ 100;
