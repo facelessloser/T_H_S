@@ -3,27 +3,32 @@
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 
-int threshold = 5;
-int oldvalue = 0;
-int newvalue = 0;
+const int ledBeat = 10; // Led connected to pin 10
+const int heartSensor = A0; // Piezo sensor connected to pin A0
+const int tempPin = A1; // LM35 connected to pin A1
+float tempRead; // Read the LM35 values
 
-int firstRun = 1;
+int threshold = 5; // Threshold for the piezo sensor 
+int oldvalue = 0; // Old value for piezo sensor
+int newvalue = 0; // New value for piezo sensor
+int cnt = 0; // Used for timing 
+int timings[16]; // Timing values for the piezo sensor
 
-int ledStatus = 0;
-int speakerStatus = 0;
+int firstRun = 1; // Tells it to run the splashscreen
+
+//int ledStatus = 0;
+//int speakerStatus = 0;
 int buttonCounter;
 
+// Wait time for the millis timers
 unsigned long oldmillis = 0;
 unsigned long newmillis = 0;
 unsigned long waitUntil = 0;
 unsigned long waitUntilTemp = 0;
 
-int fullBattery = 880;
-int emptyBattery = 300;
-int batteryPercent;
-
-int tempPin = 1;
-float tempRead;
+int fullBattery = 880; // Battery max value
+int emptyBattery = 300; // Battery min value
+int batteryPercent; // Batttery percent
 
 // Button stuff
 const int button = 5; // Button set to pin 5
@@ -33,21 +38,15 @@ int reading_button; // the current reading from the input pin
 int previous_button = HIGH; // the previous reading from the input pin
 
 // Speaker stuff
-int pinSpeaker = 9;  // Speaker pin 8
+int pinSpeaker = 9;  // Speaker pin 9 
 const int octave = 0;  // The octave set for the player
-const char heartBeat[] PROGMEM ="button:16e";
+const char heartBeat[] PROGMEM ="heartBeat:16e"; // Makes the heart beat sound
 Rtttl player;  // Song player
 
 uint8_t heart[8] = {0x0, 0xa, 0x1f, 0x1f, 0xe, 0x4, 0x0, 0x0}; // Custom char heart
 uint8_t temp[8] = {0x4, 0xa, 0xa, 0xa, 0x11, 0x1f, 0x1f, 0xe}; // Custom char temp 
 uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char degrees c
 uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
-
-int cnt = 0;
-int timings[16];
-
-const int led_beat = 10;
-int heart_sensor = 0;
 
 void setup() {
   Serial.begin(9600); 
@@ -62,7 +61,7 @@ void setup() {
   lcd.createChar(3, battery); // Custom Char degrees C
   lcd.begin(16, 2); // Set up the lcd to have 16 char on 2 lines
 
-  pinMode(led_beat, OUTPUT); 
+  pinMode(ledBeat, OUTPUT); 
 
   pinMode(button, INPUT); // Set the button as input
   digitalWrite(button, HIGH); // initiate the internal pull up resistor
@@ -108,8 +107,7 @@ void loop() {
   previous_button = reading_button;
    
  // -------------- Debound code button green end code -------------
-
-  if (millis() >= waitUntilTemp) {
+if (millis() >= waitUntilTemp) {
     
     //lcd.clear();
     tempRead = analogRead(tempPin); // read analog pin to get temp
@@ -120,14 +118,13 @@ void loop() {
     lcd.print(tempRead); // Prints to the LCD
     lcd.print(" "); // Prints to the LCD
     lcd.print((char)2); // Print custom temp_c sign to LCD
-
-    int sensorValue = analogRead(A2);
-    batteryPercent = map(sensorValue, emptyBattery, fullBattery,0 ,100);
-    lcd.setCursor(11,1);
-    lcd.print((char)3);
-    lcd.print(batteryPercent);
-    lcd.setCursor(16,1);
-    lcd.print("%");
+    int batteryRead = analogRead(A2);
+    batteryPercent = map(batteryRead, emptyBattery, fullBattery,0 ,100);
+    lcd.setCursor(11,1); // Set cursor
+    lcd.print((char)3); // Print custom battery icon to LCD
+    lcd.print(batteryPercent); // Print to the LCD
+    lcd.setCursor(16,1); // Set cursor
+    lcd.print("%"); // Print to the LCD
 
   waitUntilTemp =+ 100;
   }
@@ -137,7 +134,7 @@ void loop() {
   newvalue = 0;
   for(int i=0; i<64; i++){ // Average over 16 measurements
     //newvalue += analogRead(A2);
-    newvalue += analogRead(heart_sensor);
+    newvalue += analogRead(heartSensor);
   }
   newvalue = newvalue/64;
   // find triggering edge
@@ -158,7 +155,7 @@ void loop() {
     //Serial.println(heartrate,DEC);
     cnt++;
     if (buttonCounter == 0) { 
-      digitalWrite(led_beat, HIGH);
+      digitalWrite(ledBeat, HIGH);
       }
 
     if (buttonCounter <= 1) {
@@ -175,7 +172,7 @@ void loop() {
   waitUntil += 5;
   }
 
-  digitalWrite(led_beat, LOW);
+  digitalWrite(ledBeat, LOW);
 
 }
 
