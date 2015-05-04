@@ -5,8 +5,10 @@ LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars
 
 const int ledBeat = 10; // Led connected to pin 10
 const int heartSensor = A0; // Piezo sensor connected to pin A0
-const int tempPin = A1; // LM35 connected to pin A1
+int tempPin = A1; // LM35 connected to pin A1
+//int tempPin = analogRead(A1); // LM35 connected to pin A1
 float tempRead; // Read the LM35 values
+
 
 int threshold = 5; // Threshold for the piezo sensor 
 int oldvalue = 0; // Old value for piezo sensor
@@ -18,7 +20,7 @@ int firstRun = 1; // Tells it to run the splashscreen
 
 //int ledStatus = 0;
 //int speakerStatus = 0;
-int buttonCounter;
+int buttonCounter_one;
 
 // Wait time for the millis timers
 unsigned long oldmillis = 0;
@@ -30,12 +32,19 @@ int fullBattery = 880; // Battery max value
 int emptyBattery = 300; // Battery min value
 int batteryPercent; // Batttery percent
 
-// Button stuff
-const int button = 5; // Button set to pin 5
-unsigned long time_button = 0; // the last time the output pin was toggled
-unsigned long debounce = 200; // the debounce time, increase if the output flickers
-int reading_button; // the current reading from the input pin
-int previous_button = HIGH; // the previous reading from the input pin
+// Button one 
+const int button_one = 5; // Button set to pin 5
+unsigned long time_button_one = 0; // the last time the output pin was toggled
+unsigned long debounce_one = 200; // the debounce time, increase if the output flickers
+int reading_button_one; // the current reading from the input pin
+int previous_button_one = HIGH; // the previous reading from the input pin
+
+// Button two
+const int button_two = 6; // Button set to pin 5
+unsigned long time_button_two = 0; // the last time the output pin was toggled
+unsigned long debounce_two = 200; // the debounce time, increase if the output flickers
+int reading_button_two; // the current reading from the input pin
+int previous_button_two = HIGH; // the previous reading from the input pin
 
 // Speaker stuff
 int pinSpeaker = 9;  // Speaker pin 9 
@@ -63,8 +72,10 @@ void setup() {
 
   pinMode(ledBeat, OUTPUT); 
 
-  pinMode(button, INPUT); // Set the button as input
-  digitalWrite(button, HIGH); // initiate the internal pull up resistor
+  pinMode(button_one, INPUT); // Set the button as input
+  digitalWrite(button_one, HIGH); // initiate the internal pull up resistor
+  pinMode(button_two, INPUT); // Set the button as input
+  digitalWrite(button_two, HIGH); // initiate the internal pull up resistor
   }
 
 void splashScreen() {
@@ -91,24 +102,36 @@ void loop() {
     splashScreen();
   }
 
- // ------------- Debound code button green start code -------------
-  reading_button = digitalRead(button);
+ // ------------- Debound code button one start code -------------
+  reading_button_one = digitalRead(button_one);
 
-  if (reading_button == HIGH && previous_button == LOW && millis() - time_button > debounce) { 
-    time_button = millis(); 
+  if (reading_button_one == HIGH && previous_button_one == LOW && millis() - time_button_one > debounce_one) { 
+    time_button_one = millis(); 
     // Do something here
-    buttonCounter ++;
+    buttonCounter_one ++;
     //ledStatus = 1;
-    Serial.println(buttonCounter);
-    if (buttonCounter == 3) {
-      buttonCounter = 0;
+    Serial.println(buttonCounter_one);
+    if (buttonCounter_one == 3) {
+      buttonCounter_one = 0;
       }
   }
-  previous_button = reading_button;
+  previous_button_one = reading_button_one;
    
- // -------------- Debound code button green end code -------------
-if (millis() >= waitUntilTemp) {
-    
+ // -------------- Debound code button one end code -------------
+
+ // ------------- Debound code button two start code -------------
+  reading_button_two = digitalRead(button_two);
+
+  if (reading_button_two == HIGH && previous_button_two == LOW && millis() - time_button_two > debounce_two) { 
+    time_button_two = millis(); 
+    // Do something here, button doesnt do anything yet
+      }
+  
+  previous_button_two = reading_button_two;
+   
+ // -------------- Debound code button two end code -------------
+
+  if (millis() >= waitUntilTemp) {
     //lcd.clear();
     tempRead = analogRead(tempPin); // read analog pin to get temp
     tempRead = tempRead * 0.48828125; // converts f to c
@@ -126,54 +149,52 @@ if (millis() >= waitUntilTemp) {
     lcd.setCursor(16,1); // Set cursor
     lcd.print("%"); // Print to the LCD
 
-  waitUntilTemp =+ 100;
+  waitUntilTemp =+ 1000;
   }
 
   if (millis() >= waitUntil) {
-  oldvalue = newvalue;
-  newvalue = 0;
-  for(int i=0; i<64; i++){ // Average over 16 measurements
-    //newvalue += analogRead(A2);
-    newvalue += analogRead(heartSensor);
-  }
-  newvalue = newvalue/64;
-  // find triggering edge
-  if(oldvalue<threshold && newvalue>=threshold){ 
-    oldmillis = newmillis;
-    newmillis = millis();
-
-    // fill in the current time difference in ringbuffer
-    timings[cnt%16]= (int)(newmillis-oldmillis); 
-    int totalmillis = 0;
-    // calculate average of the last 16 time differences
-    for(int i=0;i<16;i++){
-      totalmillis += timings[i];
+    oldvalue = newvalue;
+    newvalue = 0;
+    for(int i=0; i<64; i++){ // Average over 16 measurements
+      //newvalue += analogRead(A2);
+      newvalue += analogRead(heartSensor);
     }
+    newvalue = newvalue/64;
+    // find triggering edge
+    if(oldvalue<threshold && newvalue>=threshold){ 
+      oldmillis = newmillis;
+      newmillis = millis();
 
-    // calculate heart rate
-    int heartrate = 60000/(totalmillis/16);
-    //Serial.println(heartrate,DEC);
-    cnt++;
-    if (buttonCounter == 0) { 
-      digitalWrite(ledBeat, HIGH);
+      // fill in the current time difference in ringbuffer
+      timings[cnt%16]= (int)(newmillis-oldmillis); 
+      int totalmillis = 0;
+      // calculate average of the last 16 time differences
+      for(int i=0;i<16;i++){
+        totalmillis += timings[i];
       }
 
-    if (buttonCounter <= 1) {
-      playSong(heartBeat); // Play button sound
+      // calculate heart rate
+      int heartrate = 60000/(totalmillis/16);
+      //Serial.println(heartrate,DEC);
+      cnt++;
+      if (buttonCounter_one == 0) { 
+        digitalWrite(ledBeat, HIGH);
+        }
+
+      if (buttonCounter_one <= 1) {
+        playSong(heartBeat); // Play button sound
+      }
+
+      lcd.clear(); // Clears the lcd
+      lcd.setCursor(0,0); // Set cursor to start of the second screen
+      lcd.print((char)0); // Print custom heart sign to LCD
+      lcd.print(" "); // Prints to the LCD
+      lcd.print(heartrate,DEC); // Prints to the LCD
+      lcd.print(" bpm "); // Prints to the LCD
+    }
+    waitUntil += 5;
     }
 
-    lcd.clear(); // Clears the lcd
-    lcd.setCursor(0,0); // Set cursor to start of the second screen
-    lcd.print((char)0); // Print custom heart sign to LCD
-    lcd.print(" "); // Prints to the LCD
-    lcd.print(heartrate,DEC); // Prints to the LCD
-    lcd.print(" bpm "); // Prints to the LCD
+    digitalWrite(ledBeat, LOW);
+
   }
-  waitUntil += 5;
-  }
-
-  digitalWrite(ledBeat, LOW);
-
-}
-
-
