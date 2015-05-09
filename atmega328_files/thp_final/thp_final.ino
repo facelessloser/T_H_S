@@ -8,7 +8,8 @@ const int heartSensor = A0; // Piezo sensor connected to pin A0
 int tempPin = A1; // LM35 connected to pin A1
 //int tempPin = analogRead(A1); // LM35 connected to pin A1
 float tempRead; // Read the LM35 values
-
+float tempRead_c;
+float tempRead_f;
 
 int threshold = 5; // Threshold for the piezo sensor 
 int oldvalue = 0; // Old value for piezo sensor
@@ -18,9 +19,8 @@ int timings[16]; // Timing values for the piezo sensor
 
 int firstRun = 1; // Tells it to run the splashscreen
 
-//int ledStatus = 0;
-//int speakerStatus = 0;
 int buttonCounter_one;
+int toggleCtoF;
 
 // Wait time for the millis timers
 unsigned long oldmillis = 0;
@@ -55,10 +55,12 @@ Rtttl player;  // Song player
 uint8_t heart[8] = {0x0, 0xa, 0x1f, 0x1f, 0xe, 0x4, 0x0, 0x0}; // Custom char heart
 uint8_t temp[8] = {0x4, 0xa, 0xa, 0xa, 0x11, 0x1f, 0x1f, 0xe}; // Custom char temp 
 uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char degrees c
+uint8_t temp_f[8] = {0x8, 0xf4, 0x8, 0x7, 0x4, 0x7, 0x4, 0x4}; // Custom char degrees f
 uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
 
 void setup() {
   Serial.begin(9600); 
+  Serial.println("#T_H_S");
 
   player.begin(pinSpeaker);  // Starts the player
 
@@ -67,7 +69,8 @@ void setup() {
   lcd.createChar(0, heart); // Custom Char heart
   lcd.createChar(1, temp); // Custom Char temp
   lcd.createChar(2, temp_c); // Custom Char degrees C
-  lcd.createChar(3, battery); // Custom Char degrees C
+  lcd.createChar(3, battery); // Custom Char battery
+  lcd.createChar(4, temp_f); // Custom char degrees F
   lcd.begin(16, 2); // Set up the lcd to have 16 char on 2 lines
 
   pinMode(ledBeat, OUTPUT); 
@@ -108,11 +111,9 @@ void loop() {
   if (reading_button_one == HIGH && previous_button_one == LOW && millis() - time_button_one > debounce_one) { 
     time_button_one = millis(); 
     // Do something here
-    buttonCounter_one ++;
-    //ledStatus = 1;
-    Serial.println(buttonCounter_one);
-    if (buttonCounter_one == 3) {
-      buttonCounter_one = 0;
+    buttonCounter_one ++; // increments when the button is pressed
+    if (buttonCounter_one == 3) { // When it reaches 3 it resets
+      buttonCounter_one = 0; // Resets the button counter
       }
   }
   previous_button_one = reading_button_one;
@@ -125,6 +126,12 @@ void loop() {
   if (reading_button_two == HIGH && previous_button_two == LOW && millis() - time_button_two > debounce_two) { 
     time_button_two = millis(); 
     // Do something here, button doesnt do anything yet
+    toggleCtoF ++;
+    Serial.println(toggleCtoF);
+    lcd.clear();
+    if (toggleCtoF == 2) {
+      toggleCtoF = 0;
+      }
       }
   
   previous_button_two = reading_button_two;
@@ -132,17 +139,27 @@ void loop() {
  // -------------- Debound code button two end code -------------
 
   if (millis() >= waitUntilTemp) {
-    //lcd.clear();
-    tempRead = analogRead(tempPin); // read analog pin to get temp
-    tempRead = tempRead * 0.48828125; // converts f to c
+    tempRead_c = analogRead(tempPin); // read analog pin to get temp
+    tempRead_c = tempRead_c * 0.48828125; // Converts reading to C
+    tempRead_f = tempRead_c *9 / 5; // Converts reading to f
+    tempRead_f = tempRead_f + 32; // Converts reading to f
+
     lcd.setCursor(0,1); // Set cursor to start of the second screen
     lcd.print((char)1); // Print custom temp sign to LCD
     lcd.print(" "); // Prints to the LCD
-    lcd.print(tempRead); // Prints to the LCD
+    if (toggleCtoF == 1) {
+      lcd.print(tempRead_c); // Prints to the LCD
+      lcd.print((char)2); // Print custom temp_c sign to LCD
+      }
+    else {
+      lcd.print(tempRead_f);
+      lcd.print((char)4); // Print custom temp_f sign to LCD
+      }
     lcd.print(" "); // Prints to the LCD
-    lcd.print((char)2); // Print custom temp_c sign to LCD
-    int batteryRead = analogRead(A2);
-    batteryPercent = map(batteryRead, emptyBattery, fullBattery,0 ,100);
+
+    int batteryRead = analogRead(A2); // Reads battery pin
+    batteryPercent = map(batteryRead, emptyBattery, fullBattery,0 ,100); // Maps the battery percent from high and lows
+
     lcd.setCursor(11,1); // Set cursor
     lcd.print((char)3); // Print custom battery icon to LCD
     lcd.print(batteryPercent); // Print to the LCD
