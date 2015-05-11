@@ -85,6 +85,7 @@ void splashScreen() {
   lcd.clear(); // Clears the lcd
   lcd.setCursor(0,0); // Set cursor to start of the second screen
   lcd.print("#T_H_S"); // Prints to the LCD
+  Serial.println("T_H_S");
   delay(1000);
   firstRun = 0; // Sets firstRun to 0 so it wouldnt run the warmup code again
   lcd.clear(); // Clears the lcd
@@ -129,6 +130,9 @@ void loop() {
     toggleCtoF ++;
     Serial.println(toggleCtoF);
     lcd.clear();
+    lcd.print((char)0); // Print custom heart sign to LCD
+    lcd.print(" "); // Prints to the LCD
+    lcd.print(" bpm "); // Prints to the LCD
     if (toggleCtoF == 2) {
       toggleCtoF = 0;
       }
@@ -149,10 +153,13 @@ void loop() {
     lcd.print(" "); // Prints to the LCD
     if (toggleCtoF == 1) {
       lcd.print(tempRead_c); // Prints to the LCD
+      Serial.println(tempRead_c);
       lcd.print((char)2); // Print custom temp_c sign to LCD
       }
     else {
       lcd.print(tempRead_f);
+      Serial.println(tempRead_f);
+      lcd.print((char)2); // Print custom temp_c sign to LCD
       lcd.print((char)4); // Print custom temp_f sign to LCD
       }
     lcd.print(" "); // Prints to the LCD
@@ -207,6 +214,7 @@ void loop() {
       lcd.print((char)0); // Print custom heart sign to LCD
       lcd.print(" "); // Prints to the LCD
       lcd.print(heartrate,DEC); // Prints to the LCD
+      Serial.println(heartrate, DEC);
       lcd.print(" bpm "); // Prints to the LCD
     }
     waitUntil += 5;
