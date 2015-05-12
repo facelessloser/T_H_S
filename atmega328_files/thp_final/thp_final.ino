@@ -10,6 +10,7 @@ int tempPin = A1; // LM35 connected to pin A1
 float tempRead; // Read the LM35 values
 float tempRead_c;
 float tempRead_f;
+int heartrate;
 
 int threshold = 5; // Threshold for the piezo sensor 
 int oldvalue = 0; // Old value for piezo sensor
@@ -59,7 +60,7 @@ uint8_t temp_f[8] = {0x8, 0xf4, 0x8, 0x7, 0x4, 0x7, 0x4, 0x4}; // Custom char de
 uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
 
 void setup() {
-  Serial.begin(9600); 
+  Serial.begin(9600); // Start serial
   Serial.println("#T_H_S");
 
   player.begin(pinSpeaker);  // Starts the player
@@ -73,7 +74,7 @@ void setup() {
   lcd.createChar(4, temp_f); // Custom char degrees F
   lcd.begin(16, 2); // Set up the lcd to have 16 char on 2 lines
 
-  pinMode(ledBeat, OUTPUT); 
+  pinMode(ledBeat, OUTPUT); // Set led pin to be output
 
   pinMode(button_one, INPUT); // Set the button as input
   digitalWrite(button_one, HIGH); // initiate the internal pull up resistor
@@ -132,6 +133,7 @@ void loop() {
     lcd.clear();
     lcd.print((char)0); // Print custom heart sign to LCD
     lcd.print(" "); // Prints to the LCD
+    lcd.print(heartrate,DEC); // Prints to the LCD
     lcd.print(" bpm "); // Prints to the LCD
     if (toggleCtoF == 2) {
       toggleCtoF = 0;
@@ -159,7 +161,7 @@ void loop() {
     else {
       lcd.print(tempRead_f);
       Serial.println(tempRead_f);
-      lcd.print((char)2); // Print custom temp_c sign to LCD
+      //lcd.print((char)2); // Print custom temp_c sign to LCD
       lcd.print((char)4); // Print custom temp_f sign to LCD
       }
     lcd.print(" "); // Prints to the LCD
@@ -198,7 +200,7 @@ void loop() {
       }
 
       // calculate heart rate
-      int heartrate = 60000/(totalmillis/16);
+      heartrate = 60000/(totalmillis/16);
       //Serial.println(heartrate,DEC);
       cnt++;
       if (buttonCounter_one == 0) { 
