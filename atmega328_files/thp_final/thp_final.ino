@@ -21,7 +21,7 @@ int timings[16]; // Timing values for the piezo sensor
 int firstRun = 1; // Tells it to run the splashscreen
 
 int buttonCounter_one;
-int toggleCtoF;
+int toggleCtoF = 1;
 
 // Wait time for the millis timers
 unsigned long oldmillis = 0;
@@ -57,7 +57,8 @@ uint8_t heart[8] = {0x0, 0xa, 0x1f, 0x1f, 0xe, 0x4, 0x0, 0x0}; // Custom char he
 uint8_t temp[8] = {0x4, 0xa, 0xa, 0xa, 0x11, 0x1f, 0x1f, 0xe}; // Custom char temp 
 uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char degrees c
 uint8_t temp_f[8] = {0x8, 0xf4, 0x8, 0x7, 0x4, 0x7, 0x4, 0x4}; // Custom char degrees f
-uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
+//uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
+uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x1f, 0x1f, 0x1f, 0x1f}; // Custom char battery
 
 void setup() {
   Serial.begin(9600); // Start serial
@@ -90,6 +91,7 @@ void splashScreen() {
   delay(1000);
   firstRun = 0; // Sets firstRun to 0 so it wouldnt run the warmup code again
   lcd.clear(); // Clears the lcd
+  lcd.setCursor(0,0);
   lcd.print((char)0); // Print custom heart sign to LCD
   lcd.print(" "); // Prints to the LCD
   lcd.print(" bpm "); // Prints to the LCD
@@ -172,7 +174,6 @@ void loop() {
     lcd.setCursor(11,1); // Set cursor
     lcd.print((char)3); // Print custom battery icon to LCD
     lcd.print(batteryPercent); // Print to the LCD
-    lcd.setCursor(16,1); // Set cursor
     lcd.print("%"); // Print to the LCD
 
   waitUntilTemp =+ 1000;
