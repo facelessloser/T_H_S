@@ -116,6 +116,7 @@ void loop() {
     time_button_one = millis(); 
     // Do something here
     buttonCounter_one ++; // increments when the button is pressed
+    Serial.println(buttonCounter_one);
     if (buttonCounter_one == 3) { // When it reaches 3 it resets
       buttonCounter_one = 0; // Resets the button counter
       }
@@ -131,7 +132,7 @@ void loop() {
     time_button_two = millis(); 
     // Do something here, button doesnt do anything yet
     toggleCtoF ++;
-    Serial.println(toggleCtoF);
+    //Serial.println(toggleCtoF);
     lcd.clear();
     lcd.print((char)0); // Print custom heart sign to LCD
     lcd.print(" "); // Prints to the LCD
@@ -157,13 +158,12 @@ void loop() {
     lcd.print(" "); // Prints to the LCD
     if (toggleCtoF == 1) {
       lcd.print(tempRead_c); // Prints to the LCD
-      Serial.println(tempRead_c);
+      //Serial.println(tempRead_c);
       lcd.print((char)2); // Print custom temp_c sign to LCD
       }
     else {
       lcd.print(tempRead_f);
-      Serial.println(tempRead_f);
-      //lcd.print((char)2); // Print custom temp_c sign to LCD
+      //Serial.println(tempRead_f);
       lcd.print((char)4); // Print custom temp_f sign to LCD
       }
     lcd.print(" "); // Prints to the LCD
@@ -206,10 +206,15 @@ void loop() {
       cnt++;
       if (buttonCounter_one == 0) { 
         digitalWrite(ledBeat, HIGH);
+        playSong(heartBeat); // Play button sound
         }
 
-      if (buttonCounter_one <= 1) {
-        playSong(heartBeat); // Play button sound
+      if (buttonCounter_one == 1) {
+        playSong(heartBeat);
+      }
+
+      if (buttonCounter_one == 2) {
+        digitalWrite(ledBeat, HIGH);
       }
 
       lcd.clear(); // Clears the lcd
