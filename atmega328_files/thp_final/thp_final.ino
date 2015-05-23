@@ -8,9 +8,10 @@ const int heartSensor = A0; // Piezo sensor connected to pin A0
 int tempPin = A1; // LM35 connected to pin A1
 //int tempPin = analogRead(A1); // LM35 connected to pin A1
 float tempRead; // Read the LM35 values
-float tempRead_c;
+int tempRead_c;
 float tempRead_f;
 int heartrate;
+char buf[30];
 
 int threshold = 5; // Threshold for the piezo sensor 
 int oldvalue = 0; // Old value for piezo sensor
@@ -87,7 +88,6 @@ void splashScreen() {
   lcd.clear(); // Clears the lcd
   lcd.setCursor(0,0); // Set cursor to start of the second screen
   lcd.print("#T_H_S"); // Prints to the LCD
-  Serial.println("T_H_S");
   delay(1000);
   firstRun = 0; // Sets firstRun to 0 so it wouldnt run the warmup code again
   lcd.clear(); // Clears the lcd
@@ -158,7 +158,11 @@ void loop() {
     lcd.print(" "); // Prints to the LCD
     if (toggleCtoF == 1) {
       lcd.print(tempRead_c); // Prints to the LCD
-      //Serial.println(tempRead_c);
+      sprintf(buf, "#1#");
+      sprintf(buf + strlen(buf), "%d", tempRead_c);
+      sprintf(buf + strlen(buf), ";");
+      Serial.println(buf);
+      //Serial.println("%.2f",tempRead_c);
       lcd.print((char)2); // Print custom temp_c sign to LCD
       }
     else {
