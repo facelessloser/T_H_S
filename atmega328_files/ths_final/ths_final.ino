@@ -8,12 +8,14 @@ const int heartSensor = A0; // Piezo sensor connected to pin A0
 int tempPin = A1; // LM35 connected to pin A1
 //int tempPin = analogRead(A1); // LM35 connected to pin A1
 float tempRead; // Read the LM35 values
-int tempRead_c;
-float tempRead_f;
-int heartrate;
-char buf[30];
+int tempRead_c; // Read LM35 C
+int tempRead_f; // Read LM35 F 
+int heartrate; // Read heart rate sensor
 
-int threshold = 5; // Threshold for the piezo sensor 
+char bufTempC[30]; // Buffer for sending temp data
+char bufHeart[30]; // Buffer for sending heart rate data
+
+int threshold = 10; // Threshold for the piezo sensor 
 int oldvalue = 0; // Old value for piezo sensor
 int newvalue = 0; // New value for piezo sensor
 int cnt = 0; // Used for timing 
@@ -27,8 +29,8 @@ int toggleCtoF = 1;
 // Wait time for the millis timers
 unsigned long oldmillis = 0;
 unsigned long newmillis = 0;
-unsigned long waitUntil = 0;
-unsigned long waitUntilTemp = 0;
+unsigned long waitUntilHeart = 5;
+long previousMillisHeart = 0;
 
 int fullBattery = 880; // Battery max value
 int emptyBattery = 300; // Battery min value
@@ -60,6 +62,8 @@ uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char 
 uint8_t temp_f[8] = {0x8, 0xf4, 0x8, 0x7, 0x4, 0x7, 0x4, 0x4}; // Custom char degrees f
 //uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
 uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x1f, 0x1f, 0x1f, 0x1f}; // Custom char battery
+uint8_t charging[8] = {0x4, 0x4, 0xe, 0x1f, 0x11, 0x11, 0x1f, 0xa}; // Custom char battery charging
+
 
 void setup() {
   Serial.begin(9600); // Start serial
@@ -74,6 +78,7 @@ void setup() {
   lcd.createChar(2, temp_c); // Custom Char degrees C
   lcd.createChar(3, battery); // Custom Char battery
   lcd.createChar(4, temp_f); // Custom char degrees F
+  lcd.createChar(5, charging); // Custom char charging
   lcd.begin(16, 2); // Set up the lcd to have 16 char on 2 lines
 
   pinMode(ledBeat, OUTPUT); // Set led pin to be output
@@ -86,6 +91,7 @@ void setup() {
 
 void splashScreen() {
   lcd.clear(); // Clears the lcd
+  digitalWrite(ledBeat, HIGH); // Make LED high
   lcd.setCursor(0,0); // Set cursor to start of the second screen
   lcd.print("#T_H_S"); // Prints to the LCD
   delay(1000);
@@ -97,13 +103,37 @@ void splashScreen() {
   lcd.print(" bpm "); // Prints to the LCD
 }
 
-void playSong(const char * track)  // Takes the song_# pasted from the if statements below
-{
+void playSong(const char * track) { // Takes the song_# pasted from the if statements below
   player.play_P(track, octave);  // Passes the song_# and octave to the player
 }
 
-void loop() {
+void batteryLoop() {
+    int batteryRead = analogRead(A2); // Reads battery pin
+    batteryPercent = map(batteryRead, emptyBattery, fullBattery,0 ,100); // Maps the battery percent from high and lows
 
+  if (batteryRead <= 400 ) {
+    //Serial.println("Charging");
+    lcd.setCursor(10,1); // Set cursor
+    lcd.print((char)5); // Print custom battery icon to LCD
+    lcd.print("Power"); // Print to the LCD 
+    }
+
+  else {
+
+    if (batteryPercent >= 100) {
+      lcd.setCursor(11,1); // Set cursor
+      }
+    else {
+      lcd.setCursor(12,1); // Set cursor
+      }
+    lcd.print((char)3); // Print custom battery icon to LCD
+    lcd.print(batteryPercent); // Print to the LCD
+    lcd.print("%"); // Print to the LCD
+    }
+    }
+
+void loop() {
+  unsigned long currentMillisHeart = millis();
   // Runs splashscreen
   if (firstRun == 1) {
     splashScreen();
@@ -116,7 +146,6 @@ void loop() {
     time_button_one = millis(); 
     // Do something here
     buttonCounter_one ++; // increments when the button is pressed
-    Serial.println(buttonCounter_one);
     if (buttonCounter_one == 3) { // When it reaches 3 it resets
       buttonCounter_one = 0; // Resets the button counter
       }
@@ -131,9 +160,8 @@ void loop() {
   if (reading_button_two == HIGH && previous_button_two == LOW && millis() - time_button_two > debounce_two) { 
     time_button_two = millis(); 
     // Do something here, button doesnt do anything yet
-    toggleCtoF ++;
-    //Serial.println(toggleCtoF);
-    lcd.clear();
+    toggleCtoF ++; // Increments when the button is pressed
+    lcd.clear(); // Clears lcd
     lcd.print((char)0); // Print custom heart sign to LCD
     lcd.print(" "); // Prints to the LCD
     lcd.print(heartrate,DEC); // Prints to the LCD
@@ -147,43 +175,9 @@ void loop() {
    
  // -------------- Debound code button two end code -------------
 
-  if (millis() >= waitUntilTemp) {
-    tempRead_c = analogRead(tempPin); // read analog pin to get temp
-    tempRead_c = tempRead_c * 0.48828125; // Converts reading to C
-    tempRead_f = tempRead_c *9 / 5; // Converts reading to f
-    tempRead_f = tempRead_f + 32; // Converts reading to f
-
-    lcd.setCursor(0,1); // Set cursor to start of the second screen
-    lcd.print((char)1); // Print custom temp sign to LCD
-    lcd.print(" "); // Prints to the LCD
-    if (toggleCtoF == 1) {
-      lcd.print(tempRead_c); // Prints to the LCD
-      sprintf(buf, "#1#");
-      sprintf(buf + strlen(buf), "%d", tempRead_c);
-      sprintf(buf + strlen(buf), ";");
-      Serial.println(buf);
-      //Serial.println("%.2f",tempRead_c);
-      lcd.print((char)2); // Print custom temp_c sign to LCD
-      }
-    else {
-      lcd.print(tempRead_f);
-      //Serial.println(tempRead_f);
-      lcd.print((char)4); // Print custom temp_f sign to LCD
-      }
-    lcd.print(" "); // Prints to the LCD
-
-    int batteryRead = analogRead(A2); // Reads battery pin
-    batteryPercent = map(batteryRead, emptyBattery, fullBattery,0 ,100); // Maps the battery percent from high and lows
-
-    lcd.setCursor(11,1); // Set cursor
-    lcd.print((char)3); // Print custom battery icon to LCD
-    lcd.print(batteryPercent); // Print to the LCD
-    lcd.print("%"); // Print to the LCD
-
-  waitUntilTemp =+ 1000;
-  }
-
-  if (millis() >= waitUntil) {
+  //if (millis() >= waitUntil) {
+  if (currentMillisHeart - previousMillisHeart > waitUntilHeart) {
+    previousMillisHeart = currentMillisHeart;
     oldvalue = newvalue;
     newvalue = 0;
     for(int i=0; i<64; i++){ // Average over 16 measurements
@@ -204,12 +198,11 @@ void loop() {
         totalmillis += timings[i];
       }
 
-      // calculate heart rate
-      heartrate = 60000/(totalmillis/16);
+      heartrate = 60000/(totalmillis/16); // calculate heart rate
       //Serial.println(heartrate,DEC);
       cnt++;
       if (buttonCounter_one == 0) { 
-        digitalWrite(ledBeat, HIGH);
+        digitalWrite(ledBeat, HIGH); // Make LED high
         playSong(heartBeat); // Play button sound
         }
 
@@ -226,12 +219,39 @@ void loop() {
       lcd.print((char)0); // Print custom heart sign to LCD
       lcd.print(" "); // Prints to the LCD
       lcd.print(heartrate,DEC); // Prints to the LCD
-      Serial.println(heartrate, DEC);
+      //Serial.println(heartrate, DEC);
       lcd.print(" bpm "); // Prints to the LCD
+
     }
-    waitUntil += 5;
+      tempRead_c = analogRead(tempPin); // read analog pin to get temp
+      tempRead_c = tempRead_c * 0.48828125; // Converts reading to C
+      tempRead_f = tempRead_c *9 / 5; // Converts reading to f
+      tempRead_f = tempRead_f + 32; // Converts reading to f
+      lcd.setCursor(0,1); // Set cursor to start of the second screen
+      lcd.print((char)1); // Print custom temp sign to LCD
+      lcd.print(" "); // Prints to the LCD
+      if (toggleCtoF == 1) {
+        lcd.print(tempRead_c); // Prints to the LCD
+        sprintf(bufTempC, "#1#");
+        sprintf(bufTempC + strlen(bufTempC), "%d", tempRead_c);
+        sprintf(bufTempC + strlen(bufTempC), ";");
+        //Serial.print(bufTempC);
+        lcd.print((char)2); // Print custom temp_c sign to LCD
+        }
+      else {
+        lcd.print(tempRead_f);
+        //Serial.println(tempRead_f);
+        lcd.print((char)4); // Print custom temp_f sign to LCD
+        }
+      lcd.print(" "); // Prints to the LCD
+      batteryLoop();
     }
 
+    sprintf(bufHeart, "#2#");
+    sprintf(bufHeart + strlen(bufHeart), "%d", heartrate, DEC);
+    sprintf(bufHeart + strlen(bufHeart), ";");
+    //Serial.print(bufHeart);
     digitalWrite(ledBeat, LOW);
 
   }
+
