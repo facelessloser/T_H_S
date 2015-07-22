@@ -29,7 +29,7 @@ int toggleCtoF = 1;
 // Wait time for the millis timers
 unsigned long oldmillis = 0;
 unsigned long newmillis = 0;
-unsigned long waitUntilHeart = 5;
+unsigned long waitUntilHeart = 10;
 long previousMillisHeart = 0;
 
 int fullBattery = 880; // Battery max value
@@ -37,14 +37,14 @@ int emptyBattery = 300; // Battery min value
 int batteryPercent; // Batttery percent
 
 // Button one 
-const int button_one = 5; // Button set to pin 5
+const int button_one = 6; // Button set to pin 5
 unsigned long time_button_one = 0; // the last time the output pin was toggled
 unsigned long debounce_one = 200; // the debounce time, increase if the output flickers
 int reading_button_one; // the current reading from the input pin
 int previous_button_one = HIGH; // the previous reading from the input pin
 
 // Button two
-const int button_two = 6; // Button set to pin 5
+const int button_two = 5; // Button set to pin 5
 unsigned long time_button_two = 0; // the last time the output pin was toggled
 unsigned long debounce_two = 200; // the debounce time, increase if the output flickers
 int reading_button_two; // the current reading from the input pin
@@ -94,13 +94,15 @@ void splashScreen() {
   digitalWrite(ledBeat, HIGH); // Make LED high
   lcd.setCursor(0,0); // Set cursor to start of the second screen
   lcd.print("#T_H_S"); // Prints to the LCD
+  lcd.setCursor(0,1); // Set cursor to start of the second screen
+  lcd.print("v0.3"); // Prints to the LCD
   delay(1000);
   firstRun = 0; // Sets firstRun to 0 so it wouldnt run the warmup code again
   lcd.clear(); // Clears the lcd
-  lcd.setCursor(0,0);
+  lcd.setCursor(0,1);
   lcd.print((char)0); // Print custom heart sign to LCD
-  lcd.print(" "); // Prints to the LCD
-  lcd.print(" bpm "); // Prints to the LCD
+  lcd.print(" 0 "); // Prints to the LCD
+  lcd.print("bpm "); // Prints to the LCD
 }
 
 void playSong(const char * track) { // Takes the song_# pasted from the if statements below
@@ -145,9 +147,15 @@ void loop() {
   if (reading_button_one == HIGH && previous_button_one == LOW && millis() - time_button_one > debounce_one) { 
     time_button_one = millis(); 
     // Do something here
-    buttonCounter_one ++; // increments when the button is pressed
-    if (buttonCounter_one == 3) { // When it reaches 3 it resets
-      buttonCounter_one = 0; // Resets the button counter
+    toggleCtoF ++; // Increments when the button is pressed
+    lcd.clear(); // Clears lcd
+    lcd.setCursor(0,1); // Set cursor to start of the second screen
+    lcd.print((char)0); // Print custom heart sign to LCD
+    lcd.print(" "); // Prints to the LCD
+    lcd.print(heartrate,DEC); // Prints to the LCD
+    lcd.print(" bpm "); // Prints to the LCD
+    if (toggleCtoF == 2) {
+      toggleCtoF = 0;
       }
   }
   previous_button_one = reading_button_one;
@@ -160,16 +168,12 @@ void loop() {
   if (reading_button_two == HIGH && previous_button_two == LOW && millis() - time_button_two > debounce_two) { 
     time_button_two = millis(); 
     // Do something here, button doesnt do anything yet
-    toggleCtoF ++; // Increments when the button is pressed
-    lcd.clear(); // Clears lcd
-    lcd.print((char)0); // Print custom heart sign to LCD
-    lcd.print(" "); // Prints to the LCD
-    lcd.print(heartrate,DEC); // Prints to the LCD
-    lcd.print(" bpm "); // Prints to the LCD
-    if (toggleCtoF == 2) {
-      toggleCtoF = 0;
+    buttonCounter_one ++; // increments when the button is pressed
+    if (buttonCounter_one == 3) { // When it reaches 3 it resets
+      buttonCounter_one = 0; // Resets the button counter
       }
       }
+      
   
   previous_button_two = reading_button_two;
    
@@ -215,7 +219,7 @@ void loop() {
       }
 
       lcd.clear(); // Clears the lcd
-      lcd.setCursor(0,0); // Set cursor to start of the second screen
+      lcd.setCursor(0,1); // Set cursor to start of the second screen
       lcd.print((char)0); // Print custom heart sign to LCD
       lcd.print(" "); // Prints to the LCD
       lcd.print(heartrate,DEC); // Prints to the LCD
@@ -227,7 +231,7 @@ void loop() {
       tempRead_c = tempRead_c * 0.48828125; // Converts reading to C
       tempRead_f = tempRead_c *9 / 5; // Converts reading to f
       tempRead_f = tempRead_f + 32; // Converts reading to f
-      lcd.setCursor(0,1); // Set cursor to start of the second screen
+      lcd.setCursor(0,0); // Set cursor to start of the second screen
       lcd.print((char)1); // Print custom temp sign to LCD
       lcd.print(" "); // Prints to the LCD
       if (toggleCtoF == 1) {
