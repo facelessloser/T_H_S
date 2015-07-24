@@ -23,7 +23,7 @@ int timings[16]; // Timing values for the piezo sensor
 
 int firstRun = 1; // Tells it to run the splashscreen
 
-int buttonCounter_one;
+int toggleLedPiezo;
 int toggleCtoF = 1;
 
 // Wait time for the millis timers
@@ -60,7 +60,6 @@ uint8_t heart[8] = {0x0, 0xa, 0x1f, 0x1f, 0xe, 0x4, 0x0, 0x0}; // Custom char he
 uint8_t temp[8] = {0x4, 0xa, 0xa, 0xa, 0x11, 0x1f, 0x1f, 0xe}; // Custom char temp 
 uint8_t temp_c[8] = {0x8, 0xf4, 0x8, 0x43, 0x4, 0x4, 0x43, 0x0}; // Custom char degrees c
 uint8_t temp_f[8] = {0x8, 0xf4, 0x8, 0x7, 0x4, 0x7, 0x4, 0x4}; // Custom char degrees f
-//uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; // Custom char battery
 uint8_t battery[8] = {0xe, 0x11, 0x11, 0x11, 0x1f, 0x1f, 0x1f, 0x1f}; // Custom char battery
 uint8_t charging[8] = {0x4, 0x4, 0xe, 0x1f, 0x11, 0x11, 0x1f, 0xa}; // Custom char battery charging
 
@@ -168,9 +167,9 @@ void loop() {
   if (reading_button_two == HIGH && previous_button_two == LOW && millis() - time_button_two > debounce_two) { 
     time_button_two = millis(); 
     // Do something here, button doesnt do anything yet
-    buttonCounter_one ++; // increments when the button is pressed
-    if (buttonCounter_one == 3) { // When it reaches 3 it resets
-      buttonCounter_one = 0; // Resets the button counter
+    toggleLedPiezo ++; // increments when the button is pressed
+    if (toggleLedPiezo == 3) { // When it reaches 3 it resets
+      toggleLedPiezo = 0; // Resets the button counter
       }
       }
       
@@ -205,16 +204,16 @@ void loop() {
       heartrate = 60000/(totalmillis/16); // calculate heart rate
       //Serial.println(heartrate,DEC);
       cnt++;
-      if (buttonCounter_one == 0) { 
+      if (toggleLedPiezo == 0) { 
         digitalWrite(ledBeat, HIGH); // Make LED high
         playSong(heartBeat); // Play button sound
         }
 
-      if (buttonCounter_one == 1) {
+      if (toggleLedPiezo == 1) {
         playSong(heartBeat);
       }
 
-      if (buttonCounter_one == 2) {
+      if (toggleLedPiezo == 2) {
         digitalWrite(ledBeat, HIGH);
       }
 
