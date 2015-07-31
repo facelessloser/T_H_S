@@ -1,4 +1,7 @@
 # T_H_S
+
+https://facelesstech.files.wordpress.com/2015/07/main_ths2.jpg
+
 Low cost open source heart rate and body temperature monitor
 
 Blog post can be found here
