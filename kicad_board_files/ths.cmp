@@ -1,0 +1,122 @@
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = Wed 29 Apr 2015 21:13:10 BST
+
+BeginCmp
+TimeStamp = /55356987;
+Reference = 0.1uf1;
+ValeurCmp = C;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /55356999;
+Reference = 1k1;
+ValeurCmp = R;
+IdModule  = R4-5;
+EndCmp
+
+BeginCmp
+TimeStamp = /553566BA;
+Reference = 16mhz1;
+ValeurCmp = CRYSTAL;
+IdModule  = Crystal_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /553566E6;
+Reference = 22uf1;
+ValeurCmp = C;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /553566F3;
+Reference = 22uf2;
+ValeurCmp = C;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5536B369;
+Reference = 220ohm1;
+ValeurCmp = R;
+IdModule  = R4-5;
+EndCmp
+
+BeginCmp
+TimeStamp = /5534E2AF;
+Reference = BT1;
+ValeurCmp = BATTERY;
+IdModule  = battery_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /5534E29E;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = LED_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /55356922;
+Reference = FTDI1;
+ValeurCmp = FTDI;
+IdModule  = FTDI;
+EndCmp
+
+BeginCmp
+TimeStamp = /5534E27B;
+Reference = IC1;
+ValeurCmp = ATMEGA328-P;
+IdModule  = atmega328_socket;
+EndCmp
+
+BeginCmp
+TimeStamp = /5535693B;
+Reference = IC2_LCD1;
+ValeurCmp = IC2_LCD;
+IdModule  = LCD_I2C_Custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /5536B3F5;
+Reference = SP1;
+ValeurCmp = SPEAKER;
+IdModule  = speaker_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /5536B4E7;
+Reference = SW1;
+ValeurCmp = SW_PUSH;
+IdModule  = push_button_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /5536B4F4;
+Reference = SW2;
+ValeurCmp = SW_PUSH;
+IdModule  = push_button_custom;
+EndCmp
+
+BeginCmp
+TimeStamp = /55380710;
+Reference = U1;
+ValeurCmp = LM35;
+IdModule  = LM35;
+EndCmp
+
+BeginCmp
+TimeStamp = /55380C2B;
+Reference = U2;
+ValeurCmp = VIBRATION_SENSOR;
+IdModule  = vibration_sensor;
+EndCmp
+
+BeginCmp
+TimeStamp = /553D326C;
+Reference = U3;
+ValeurCmp = BATTERY_MONITOR;
+IdModule  = battery_monitor;
+EndCmp
+
+EndListe
